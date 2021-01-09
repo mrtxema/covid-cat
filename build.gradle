@@ -1,0 +1,20 @@
+group = 'cat.mrtxema.covid'
+version = '1.0'
+
+apply plugin: 'java'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    xchart_version = '3.7.0'
+    rcaller_version = '3.0'
+}
+
+dependencies {
+    implementation group:'org.knowm.xchart', name:'xchart', version:xchart_version
+    implementation group:'com.github.jbytecode', name:'RCaller', version:rcaller_version
+}
