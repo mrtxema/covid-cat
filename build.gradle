@@ -1,7 +1,10 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
 group = 'cat.mrtxema.covid'
 version = '1.0'
-
-apply plugin: 'java'
 sourceCompatibility = 1.8
 
 repositories {
@@ -17,4 +20,22 @@ ext {
 dependencies {
     implementation group:'org.knowm.xchart', name:'xchart', version:xchart_version
     implementation group:'com.github.jbytecode', name:'RCaller', version:rcaller_version
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url repsyUrl
+            credentials {
+                username repsyUsername
+                password repsyPassword
+            }
+        }
+    }
 }

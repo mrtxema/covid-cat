@@ -8,14 +8,27 @@ It provides access to the time series raw data and generates chart images too.
 
 ## Usage
 
+### Gradle dependency
+Covid-Cat is available at [Repsy](https://repsy.io/) Maven repo.
+
+If you're using Gradle, you could add Covid-Cat as a dependency with the following steps:
+
+1. Add `maven { url 'https://repo.repsy.io/mvn/mrtxema/public' }` to the `repositories` in your `build.gradle`.
+2. Add `implementation group:'cat.mrtxema.covid', name:'covid-cat', version:'1.0'` to `dependencies` in your `build.gradle`.
+
+### Using Covid-Cat
 The simplest way to use Covid-Cat is to use the `CovidDataManager` to display
 all supported charts in a `JFrame` window:
 ```java
 new CovidDataManager().loadData().displayAllCharts(windowTitle);
 ```
+![Screenshot](screenshot.png)
 
 `CovidDataManager` also provides access to the raw data series used to generate 
 the charts and to each specific chart described below.
+
+
+## Charts
 
 ### CovidCasesChart
 This chart shows the evolution of daily confirmed cases, serious ills and deaths.
