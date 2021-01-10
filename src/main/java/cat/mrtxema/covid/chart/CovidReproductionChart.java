@@ -8,7 +8,6 @@ import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.style.colors.XChartSeriesColors;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
@@ -22,29 +21,25 @@ public class CovidReproductionChart extends BaseChart {
     
     @Override
     protected XYChart getChart() {
-        try {
-            CovidReproductionData reproductionData = new CovidReproductionDataCalculator().calculate(covidData.getDailyNoNursingPositives());
+        XYChart chart = new XYChartBuilder()
+                .width(1200)
+                .height(600)
+                .title("Velocitat de propagació")
+                .xAxisTitle("Data")
+                .yAxisTitle("Rt")
+                .build();
 
-            XYChart chart = new XYChartBuilder()
-                    .width(1200)
-                    .height(600)
-                    .title("Velocitat de propagació")
-                    .xAxisTitle("Data")
-                    .yAxisTitle("Rt")
-                    .build();
+        configureStyler(chart.getStyler()).setYAxisDecimalPattern("#,##0.00");
 
-            configureStyler(chart.getStyler()).setYAxisDecimalPattern("#,##0.00");
+        CovidReproductionData reproductionData = new CovidReproductionDataCalculator().calculate(covidData.getDailyNoNursingPositives());
+        Instant startInstant = Instant.now().plus(-8*7, ChronoUnit.DAYS);
+        addSeries(chart, "Rt oficial", sliceData(reproductionData.getOfficialRt(), startInstant), XChartSeriesColors.BLUE);
+        addSeries(chart, "Rt alternativa", sliceData(reproductionData.getAlternativeRt(), startInstant), XChartSeriesColors.RED);
+        addSeries(chart, "Rt EpiEstim", sliceData(reproductionData.getEpiestimRt(), startInstant), XChartSeriesColors.ORANGE);
 
-            Instant startInstant = Instant.now().plus(-8*7, ChronoUnit.DAYS);
-            addSeries(chart, "Rt oficial", sliceData(reproductionData.getOfficialRt(), startInstant), XChartSeriesColors.BLUE);
-            addSeries(chart, "Rt alternativa", sliceData(reproductionData.getAlternativeRt(), startInstant), XChartSeriesColors.RED);
-            addSeries(chart, "Rt EpiEstim", sliceData(reproductionData.getEpiestimRt(), startInstant), XChartSeriesColors.ORANGE);
-            configureYAxisMargin(chart.getStyler());
+        configureYAxisMargin(chart.getStyler());
 
-            return chart;
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        return chart;
     }
 
     private java.util.List<DataPoint<? extends Number>> sliceData(java.util.List<? extends DataPoint<? extends Number>> genericDataPoints, Instant startInstant) {

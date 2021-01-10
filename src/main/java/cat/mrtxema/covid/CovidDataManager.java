@@ -10,12 +10,10 @@ import javax.swing.JFrame;
 import java.io.IOException;
 
 public class CovidDataManager {
-    private Configuration configuration;
     private CovidDataSeries covidData;
 
     public CovidDataManager loadData() throws IOException {
-        this.configuration = Configuration.load();
-        this.covidData =  new CsvCovidDataExtractor(configuration.getCsvDatasourceUrl()).extractData();
+        this.covidData =  new CsvCovidDataExtractor().extractData();
         return this;
     }
 
@@ -27,11 +25,11 @@ public class CovidDataManager {
     }
 
     public int getTotalPopulation() {
-        return configuration.getTotalPopulation();
+        return Configuration.getInstance().getTotalPopulation();
     }
 
     public CovidCasesChart getCovidCasesChart() {
-        return new CovidCasesChart(getCovidData(), configuration);
+        return new CovidCasesChart(getCovidData());
     }
 
     public CovidReproductionChart getCovidReproductionChart() {
@@ -39,7 +37,7 @@ public class CovidDataManager {
     }
 
     public ImmunityChart getImmunityChart() {
-        return new ImmunityChart(getCovidData(), configuration);
+        return new ImmunityChart(getCovidData());
     }
 
     public JFrame displayAllCharts(String windowTitle) {

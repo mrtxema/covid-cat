@@ -45,8 +45,10 @@ N(t) are the daily confirmed cases
 R(t) = Nw(t) / Nw(t-5)
 where Nw(t) is the average of the last 7 daily confirmed cases
 ```
-* EpiEstim R(t): EpiEstim method (Cori, A., Ferguson, N.M., Fraser, C., Cauchemez, S., 2019 https://doi.org/10.1093/aje/kwt133)
-using the R implementation in https://github.com/mrc-ide/EpiEstim
+* EpiEstim R(t): EpiEstim method (Cori, A., Ferguson, N.M., Fraser, C., Cauchemez, S., 2019 [https://doi.org/10.1093/aje/kwt133]())
+using the R implementation in [https://github.com/mrc-ide/EpiEstim](), with 95% confidence intervals. 
+  This is calculated using sliding weekly windows, with a parametric serial interval based on 
+  a mean of μsi=4.8 and standard deviation σsi=2.3. Requires R to be installed.
   
 ### ImmunityChart
 This chart shows the daily estimation of the percentage of the population with 

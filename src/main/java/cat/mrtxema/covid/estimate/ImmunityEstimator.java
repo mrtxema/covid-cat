@@ -1,5 +1,6 @@
 package cat.mrtxema.covid.estimate;
 
+import cat.mrtxema.covid.Configuration;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
 
 import java.time.LocalDate;
@@ -9,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ImmunityEstimator {
-    private static final double VACCINE_IMMUNITY_RATE = 0.95; // Pfizer rate
     private final List<DetectionRate> rates;
 
     public ImmunityEstimator() {
@@ -48,6 +48,10 @@ public class ImmunityEstimator {
     public IntegerDataPoint estimateImmunityByVaccine(IntegerDataPoint vaccinated) {
         return new IntegerDataPoint()
                 .setDate(vaccinated.getDate())
-                .setValue((int) (vaccinated.getValue() * VACCINE_IMMUNITY_RATE));
+                .setValue((int) (vaccinated.getValue() * getVaccineImmunityRate()));
+    }
+
+    private float getVaccineImmunityRate() {
+        return Configuration.getInstance().getPfizerVaccineEfficacyRate();
     }
 }

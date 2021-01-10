@@ -9,11 +9,9 @@ import org.knowm.xchart.style.lines.SeriesLines;
 
 public class CovidCasesChart extends BaseChart {
     private final CovidDataSeries covidData;
-    private final int positivesAggregationDays;
 
-    public CovidCasesChart(CovidDataSeries covidData, Configuration configuration) {
+    public CovidCasesChart(CovidDataSeries covidData) {
         this.covidData = covidData;
-        this.positivesAggregationDays = configuration.getPositivesAggregationDays();
     }
     
     @Override
@@ -25,12 +23,15 @@ public class CovidCasesChart extends BaseChart {
                 .xAxisTitle("Data")
                 .yAxisTitle("Casos diaris")
                 .build();
-
         configureStyler(chart.getStyler());
+
+        int positivesAggregationDays = Configuration.getInstance().getPositivesAggregationDays();
         addSeries(chart, "Positius", covidData.getAggregatedPositives(positivesAggregationDays), XChartSeriesColors.BLUE, 0);
         addSeries(chart, "Greus", covidData.getSeriousIllsData(), XChartSeriesColors.ORANGE, 1);
         addSeries(chart, "Morts", covidData.getDeathsData(), XChartSeriesColors.ORANGE, 1)
+                .setLineWidth(4)
                 .setLineStyle(SeriesLines.DASH_DASH);
+
         configureYAxisMargin(chart.getStyler());
 
         return chart;

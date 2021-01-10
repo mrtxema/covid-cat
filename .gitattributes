@@ -1,2 +1,0 @@
-# exclude R files from Github language detection
-*.R linguist-vendored

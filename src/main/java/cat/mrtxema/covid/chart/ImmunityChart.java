@@ -14,11 +14,9 @@ import java.util.stream.Collectors;
 
 public class ImmunityChart extends BaseChart {
     private final CovidDataSeries covidData;
-    private final Configuration configuration;
 
-    public ImmunityChart(CovidDataSeries covidData, Configuration configuration) {
+    public ImmunityChart(CovidDataSeries covidData) {
         this.covidData = covidData;
-        this.configuration = configuration;
     }
     
     @Override
@@ -35,17 +33,18 @@ public class ImmunityChart extends BaseChart {
                 .setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Area)
                 .setYAxisDecimalPattern("#0");
 
+        int totalPopulation = Configuration.getInstance().getTotalPopulation();
         StackedSeries stackedData = new StackedSeries();
-        stackedData.addData(covidData.getCumulativeNaturalImmuneRate(configuration.getTotalPopulation()));
+        stackedData.addData(covidData.getCumulativeNaturalImmuneRate(totalPopulation));
         List<FloatDataPoint> naturalSeries = percentageSeries(stackedData.getSeries());
-        stackedData.addData(covidData.getCumulativeVaccineImmuneRate(configuration.getTotalPopulation()));
+        stackedData.addData(covidData.getCumulativeVaccineImmuneRate(totalPopulation));
         List<FloatDataPoint> vaccineSeries = percentageSeries(stackedData.getSeries());
 
         addSeries(chart, "Immunitat per vacuna", vaccineSeries, XChartSeriesColors.ORANGE);
         addSeries(chart, "Immunitat natural", naturalSeries, XChartSeriesColors.BLUE);
-        addSeries(chart, "Immunitat de grup", fixedValue(stackedData.getSeries(), 70f), XChartSeriesColors.RED)
+        addSeries(chart, "Immunitat de grup", fixedValue(stackedData.getSeries(), 70), XChartSeriesColors.RED)
                 .setXYSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line)
-                .setLineWidth(2.0f)
+                .setLineWidth(2)
                 .setLineStyle(SeriesLines.SOLID);
 
         configureYAxisMargin(chart.getStyler());

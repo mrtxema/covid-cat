@@ -3,18 +3,29 @@ package cat.mrtxema.covid.reproduction;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
 import cat.mrtxema.covid.timeseries.FloatDataPoint;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CovidReproductionDataCalculator {
+    private static final Logger LOGGER = Logger.getLogger(CovidReproductionDataCalculator.class.getName());
 
-    public CovidReproductionData calculate(List<IntegerDataPoint> dailyPositives) throws IOException {
+    public CovidReproductionData calculate(List<IntegerDataPoint> dailyPositives) {
         return new CovidReproductionData(
                 calculateOfficialRt(dailyPositives),
                 calculateAlternativeRt(dailyPositives),
-                new EpiEstim().estimateR(dailyPositives)
+                getEpiEstimData(dailyPositives)
         );
+    }
+
+    private List<FloatDataPoint> getEpiEstimData(List<IntegerDataPoint> dailyPositives) {
+        try {
+            return new EpiEstim().estimateR(dailyPositives);
+        } catch (EpiEstim.EpiEstimExecutionException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+            return null;
+        }
     }
 
     private List<FloatDataPoint> calculateAlternativeRt(List<IntegerDataPoint> dailyPositives) {
