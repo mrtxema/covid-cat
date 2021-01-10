@@ -3,35 +3,49 @@ package cat.mrtxema.covid.estimate;
 import cat.mrtxema.covid.Configuration;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 public class ImmunityEstimator {
     private final List<DetectionRate> rates;
 
-    public ImmunityEstimator() {
-        rates = buildRateList(
-                Arrays.asList(LocalDate.of(2020,  6, 22), LocalDate.of(2020,  11, 29)),
-                Arrays.asList(0.1318, 0.5708)
-        );
+    public ImmunityEstimator(List<IntegerDataPoint> dailyPositives) {
+        rates = buildDetectionRateList(dailyPositives);
     }
 
-    private List<DetectionRate> buildRateList(List<LocalDate> endDates, List<Double> rates) {
+    private List<DetectionRate> buildDetectionRateList(List<IntegerDataPoint> dailyPositives) {
+        int index = 0;
+        PrevalenceRate previousPrevalenceRate = null;
         List<DetectionRate> detectionRates = new ArrayList<>();
-        LocalDate previousEndDate = LocalDate.MIN;
-        Iterator<LocalDate> endDatesIterator = endDates.iterator();
-        for (double rate : rates) {
-            LocalDate endDate = endDatesIterator.next();
-            if (!endDatesIterator.hasNext()) {
-                endDate = LocalDate.MAX;
-            }
-            detectionRates.add(new DetectionRate(previousEndDate, endDate, rate));
-            previousEndDate = endDate;
+        List<PrevalenceRate> prevalenceRates = Configuration.getInstance().getPrevalenceRates();
+        for (PrevalenceRate prevalenceRate : prevalenceRates) {
+            LocalDate startDate = previousPrevalenceRate != null ? previousPrevalenceRate.endDate : LocalDate.MIN;
+            double detectionRate = getTotalDetectionsInPeriod(dailyPositives, startDate, prevalenceRate.endDate) /
+                    getTotalPrevalenceInPeriod(previousPrevalenceRate, prevalenceRate);
+            LocalDate endDate = (index < prevalenceRates.size() - 1) ? prevalenceRate.endDate : LocalDate.MAX;
+            detectionRates.add(new DetectionRate(startDate, endDate, detectionRate));
+            index++;
+            previousPrevalenceRate = prevalenceRate;
         }
         return detectionRates;
+    }
+
+    private int getTotalDetectionsInPeriod(List<IntegerDataPoint> dailyPositives, LocalDate startDate, LocalDate endDate) {
+        Instant startInstant = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endInstant = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        return dailyPositives.stream()
+                .filter(dp -> dp.getDate().toInstant().isAfter(startInstant))
+                .filter(dp -> !dp.getDate().toInstant().isAfter(endInstant))
+                .mapToInt(dp -> dp.getValue())
+                .sum();
+    }
+
+    private double getTotalPrevalenceInPeriod(PrevalenceRate previousPrevalence, PrevalenceRate periodPrevalence) {
+        double previousRate = previousPrevalence != null ? previousPrevalence.rate : 0;
+        return (periodPrevalence.rate - previousRate) * Configuration.getInstance().getTotalPopulation();
     }
 
     public IntegerDataPoint estimateNaturalImmunity(IntegerDataPoint detectedCases) {
