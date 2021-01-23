@@ -50,7 +50,7 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
                     .setConfirmedCases(Integer.parseInt(cells.get("CASOS_CONFIRMAT")))
                     .setDeaths(Integer.parseInt(cells.get("EXITUS")))
                     .setNursingHome(cells.get("RESIDENCIA"))
-                    .setVaccinated(Integer.parseInt(cells.get("VACUNATS")));
+                    .setVaccinated(Integer.parseInt(cells.get("VACUNATS_DOSI_2")));
         } catch (ParseException e) {
             throw new CsvCovidDataExtractionException("Error parsing CSV file", e);
         }

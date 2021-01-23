@@ -1,9 +1,10 @@
 package cat.mrtxema.covid;
 
-import cat.mrtxema.covid.chart.CovidCasesChart;
-import cat.mrtxema.covid.chart.CovidReproductionChart;
+import cat.mrtxema.covid.chart.Chart;
+import cat.mrtxema.covid.chart.CovidCasesChartBuilder;
+import cat.mrtxema.covid.chart.CovidReproductionChartBuilder;
 import cat.mrtxema.covid.chart.GuiHelper;
-import cat.mrtxema.covid.chart.ImmunityChart;
+import cat.mrtxema.covid.chart.ImmunityChartBuilder;
 import cat.mrtxema.covid.datasource.CsvCovidDataExtractor;
 
 import javax.swing.JFrame;
@@ -28,16 +29,16 @@ public class CovidDataManager {
         return Configuration.getInstance().getTotalPopulation();
     }
 
-    public CovidCasesChart getCovidCasesChart() {
-        return new CovidCasesChart(getCovidData());
+    public Chart getCovidCasesChart() {
+        return new CovidCasesChartBuilder(getCovidData()).build();
     }
 
-    public CovidReproductionChart getCovidReproductionChart() {
-        return new CovidReproductionChart(getCovidData());
+    public Chart getCovidReproductionChart() {
+        return new CovidReproductionChartBuilder(getCovidData()).build();
     }
 
-    public ImmunityChart getImmunityChart() {
-        return new ImmunityChart(getCovidData());
+    public Chart getImmunityChart() {
+        return new ImmunityChartBuilder(getCovidData()).build();
     }
 
     public JFrame displayAllCharts(String windowTitle) {

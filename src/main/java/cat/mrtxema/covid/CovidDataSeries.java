@@ -57,6 +57,17 @@ public class CovidDataSeries {
         return cumulateData(getVaccineImmunes()).map(dp -> toPopulationRate(dp, totalPopulation)).collect(Collectors.toList());
     }
 
+    public List<FloatDataPoint> getCumulativeNaturalImmuneRateNoVaccinated(int totalPopulation) {
+        List<FloatDataPoint> naturalRates = getCumulativeNaturalImmuneRate(totalPopulation);
+        Map<Date, Float> vaccinatedRatesByDay = getCumulativeVaccineImmuneRate(totalPopulation).stream()
+                .collect(Collectors.toMap(dp -> dp.getDate(), dp -> dp.getValue()));
+        return naturalRates.stream()
+                .map(dp -> new FloatDataPoint()
+                        .setDate(dp.getDate())
+                        .setValue(dp.getValue() * (1 - vaccinatedRatesByDay.getOrDefault(dp.getDate(), 0f))))
+                .collect(Collectors.toList());
+    }
+
     public float  getLastCumulativeVaccineImmuneRate(int totalPopulation) {
         float totalImmunes = getVaccineImmunes().mapToInt(dp -> dp.getValue()).sum();
         return totalImmunes / totalPopulation;
