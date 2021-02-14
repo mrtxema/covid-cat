@@ -1,6 +1,8 @@
 package cat.mrtxema.covid.estimate;
 
 import cat.mrtxema.covid.Configuration;
+import cat.mrtxema.covid.datasource.CovidApiVaccineDataPoint;
+import cat.mrtxema.covid.datasource.VaccineManufacturer;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
 
 import java.time.Instant;
@@ -59,13 +61,13 @@ public class ImmunityEstimator {
                 .setValue((int) (detectedCases.getValue() / rate));
     }
 
-    public IntegerDataPoint estimateImmunityByVaccine(IntegerDataPoint vaccinated) {
+    public IntegerDataPoint estimateImmunityByVaccine(CovidApiVaccineDataPoint vaccineDataPoint) {
         return new IntegerDataPoint()
-                .setDate(vaccinated.getDate())
-                .setValue((int) (vaccinated.getValue() * getVaccineImmunityRate()));
+                .setDate(vaccineDataPoint.getDate())
+                .setValue((int) (vaccineDataPoint.getVaccinated() * getVaccineImmunityRate(vaccineDataPoint.getManufacturer())));
     }
 
-    private float getVaccineImmunityRate() {
-        return Configuration.getInstance().getPfizerVaccineEfficacyRate();
+    private float getVaccineImmunityRate(VaccineManufacturer manufacturer) {
+        return Configuration.getInstance().getVaccineEfficacyRate(manufacturer.getKey());
     }
 }

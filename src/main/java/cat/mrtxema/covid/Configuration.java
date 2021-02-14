@@ -37,6 +37,10 @@ public final class Configuration {
         return properties.getProperty("csv_datasource_url");
     }
 
+    public String getVaccineCsvDatasourceUrl() {
+        return properties.getProperty("vaccine_csv_datasource_url");
+    }
+
     public int getPositivesAggregationDays() {
         return getIntProperty("positives_aggregation_days");
     }
@@ -53,8 +57,8 @@ public final class Configuration {
         return getFloatProperty("epiestim.stddev");
     }
 
-    public float getPfizerVaccineEfficacyRate() {
-        return getFloatProperty("vaccines.pfizer.efficacy");
+    public float getVaccineEfficacyRate(String manufacturerKey) {
+        return getFloatProperty(String.format("vaccines.%s.efficacy", manufacturerKey));
     }
 
     public List<PrevalenceRate> getPrevalenceRates() {

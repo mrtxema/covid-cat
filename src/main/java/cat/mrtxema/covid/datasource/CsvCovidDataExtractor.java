@@ -19,11 +19,11 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
     private static final String DATA_SOURCE_NAME = "@salutcat";
     private static final String CSV_COLUMN_SEPARATOR = ";";
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final DateFormat vaccineDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     @Override
     public CovidDataSeries extractData() throws IOException {
-        List<CovidApiDataPoint> apiDataPoints = readData();
-        return new CovidDataSeries(DATA_SOURCE_NAME, apiDataPoints);
+        return new CovidDataSeries(DATA_SOURCE_NAME, readData(), readVaccineData());
     }
 
     private List<CovidApiDataPoint> readData() throws IOException {
@@ -42,6 +42,21 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
         }
     }
 
+    private List<CovidApiVaccineDataPoint> readVaccineData() {
+        try (InputStream inputStream = new URL(Configuration.getInstance().getVaccineCsvDatasourceUrl()).openStream()) {
+            return new CsvStreamReader<>(CSV_COLUMN_SEPARATOR, this::buildVaccineDataPoint)
+                    .readAll(inputStream)
+                    .filter(dataPoint -> dataPoint.getManufacturer() != null)
+                    .collect(Collectors.groupingBy(dataPoint -> dataPoint.cloneData().setVaccinated(0), Collectors.summingInt(CovidApiVaccineDataPoint::getVaccinated)))
+                    .entrySet().stream()
+                    .map(entry -> entry.getKey().cloneData().setVaccinated(entry.getValue()))
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new CsvCovidDataExtractionException("Error reading vaccine CSV file", e);
+        }
+    }
+
     private CovidApiDataPoint buildDataPoint(Map<String, String> cells) {
         try {
             return new CovidApiDataPoint()
@@ -49,8 +64,19 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
                     .setCriticalAdmitted(Integer.parseInt(cells.get("INGRESSATS_CRITIC")))
                     .setConfirmedCases(Integer.parseInt(cells.get("CASOS_CONFIRMAT")))
                     .setDeaths(Integer.parseInt(cells.get("EXITUS")))
-                    .setNursingHome(cells.get("RESIDENCIA"))
-                    .setVaccinated(Integer.parseInt(cells.get("VACUNATS_DOSI_2")));
+                    .setNursingHome(cells.get("RESIDENCIA"));
+        } catch (ParseException e) {
+            throw new CsvCovidDataExtractionException("Error parsing CSV file", e);
+        }
+    }
+
+    private CovidApiVaccineDataPoint buildVaccineDataPoint(Map<String, String> cells) {
+        try {
+            return new CovidApiVaccineDataPoint()
+                    .setDate(vaccineDateFormat.parse(cells.get("DATA")))
+                    .setManufacturer(VaccineManufacturer.fromName(cells.get("FABRICANT")))
+                    .setDose(Integer.parseInt(cells.get("DOSI")))
+                    .setVaccinated(Integer.parseInt(cells.get("RECOMPTE").replace(".", "")));
         } catch (ParseException e) {
             throw new CsvCovidDataExtractionException("Error parsing CSV file", e);
         }

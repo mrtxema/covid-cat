@@ -5,6 +5,7 @@ import cat.mrtxema.covid.chart.CovidCasesChartBuilder;
 import cat.mrtxema.covid.chart.CovidReproductionChartBuilder;
 import cat.mrtxema.covid.chart.GuiHelper;
 import cat.mrtxema.covid.chart.ImmunityChartBuilder;
+import cat.mrtxema.covid.chart.VaccinationChartBuilder;
 import cat.mrtxema.covid.datasource.CsvCovidDataExtractor;
 
 import javax.swing.JFrame;
@@ -39,6 +40,10 @@ public class CovidDataManager {
 
     public Chart getImmunityChart() {
         return new ImmunityChartBuilder(getCovidData()).build();
+    }
+
+    public Chart getVaccinationChart() {
+        return new VaccinationChartBuilder(getCovidData()).build();
     }
 
     public JFrame displayAllCharts(String windowTitle) {

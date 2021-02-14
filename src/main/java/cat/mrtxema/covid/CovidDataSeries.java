@@ -1,6 +1,7 @@
 package cat.mrtxema.covid;
 
 import cat.mrtxema.covid.datasource.CovidApiDataPoint;
+import cat.mrtxema.covid.datasource.CovidApiVaccineDataPoint;
 import cat.mrtxema.covid.estimate.ImmunityEstimator;
 import cat.mrtxema.covid.timeseries.FloatDataPoint;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
@@ -18,11 +19,13 @@ import java.util.stream.Stream;
 
 public class CovidDataSeries {
     private final List<CovidApiDataPoint> apiDataPoints;
+    private final List<CovidApiVaccineDataPoint> vaccinationData;
     private final String dataSourceName;
     private final ImmunityEstimator immunityEstimator;
 
-    public CovidDataSeries(String dataSourceName, List<CovidApiDataPoint> apiDataPoints) {
+    public CovidDataSeries(String dataSourceName, List<CovidApiDataPoint> apiDataPoints, List<CovidApiVaccineDataPoint> vaccineDataPoints) {
         this.apiDataPoints = apiDataPoints;
+        this.vaccinationData = vaccineDataPoints;
         this.dataSourceName = dataSourceName;
         this.immunityEstimator = new ImmunityEstimator(getDailyPositives());
     }
@@ -33,6 +36,10 @@ public class CovidDataSeries {
 
     public List<CovidApiDataPoint> getApiDataPoints() {
         return apiDataPoints;
+    }
+
+    public List<CovidApiVaccineDataPoint> getVaccinationData() {
+        return vaccinationData;
     }
 
     public Date getLastDate() {
@@ -51,6 +58,25 @@ public class CovidDataSeries {
     public List<FloatDataPoint> getCumulativeNaturalImmuneRate(int totalPopulation) {
         Stream<IntegerDataPoint> realCases = getDailyPositives().stream().map(dp -> immunityEstimator.estimateNaturalImmunity(dp));
         return cumulateData(realCases).map(dp -> toPopulationRate(dp, totalPopulation)).collect(Collectors.toList());
+    }
+
+    public List<IntegerDataPoint> getVaccineDose1() {
+        return cumulateData(aggregateVaccineData(dp -> dp.getDose() == 1)).collect(Collectors.toList());
+    }
+
+    public List<IntegerDataPoint> getVaccineDose2() {
+        return cumulateData(aggregateVaccineData(dp -> dp.getDose() == 2)).collect(Collectors.toList());
+    }
+
+    private Stream<IntegerDataPoint> aggregateVaccineData(Predicate<CovidApiVaccineDataPoint> filter) {
+        return vaccinationData.stream()
+                .filter(filter)
+                .collect(Collectors.groupingBy(
+                        CovidApiVaccineDataPoint::getDate,
+                        TreeMap::new,
+                        Collectors.summingInt(CovidApiVaccineDataPoint::getVaccinated))
+                ).entrySet().stream()
+                .map(entry -> (IntegerDataPoint) new IntegerDataPoint().setDate(entry.getKey()).setValue(entry.getValue()));
     }
 
     public List<FloatDataPoint> getCumulativeVaccineImmuneRate(int totalPopulation) {
@@ -85,9 +111,16 @@ public class CovidDataSeries {
         return aggregateData(apiDataPoints, CovidApiDataPoint::getConfirmedCases, apiDataPoint -> !"SI".equalsIgnoreCase(apiDataPoint.getNursingHome()));
     }
 
-
     private Stream<IntegerDataPoint> getVaccineImmunes() {
-        return aggregateData(apiDataPoints, CovidApiDataPoint::getVaccinated).stream().map(dp -> immunityEstimator.estimateImmunityByVaccine(dp));
+        return vaccinationData.stream()
+                .filter(dp -> dp.getDose() == 2)
+                .map(dp -> immunityEstimator.estimateImmunityByVaccine(dp))
+                .collect(Collectors.groupingBy(
+                        IntegerDataPoint::getDate,
+                        TreeMap::new,
+                        Collectors.summingInt(IntegerDataPoint::getValue))
+                ).entrySet().stream()
+                .map(entry -> (IntegerDataPoint) new IntegerDataPoint().setDate(entry.getKey()).setValue(entry.getValue()));
     }
 
     private FloatDataPoint toPopulationRate(IntegerDataPoint populationData, int totalPopulation) {

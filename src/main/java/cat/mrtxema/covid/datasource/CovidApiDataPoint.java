@@ -16,7 +16,6 @@ public class CovidApiDataPoint {
     private int totalAdmitted;
     private int criticalAdmitted;
     private int deaths;
-    private int vaccinated;
 
     public String getRegionName() {
         return regionName;
@@ -132,15 +131,6 @@ public class CovidApiDataPoint {
 
     public CovidApiDataPoint setDeaths(int deaths) {
         this.deaths = deaths;
-        return this;
-    }
-
-    public int getVaccinated() {
-        return vaccinated;
-    }
-
-    public CovidApiDataPoint setVaccinated(int vaccinated) {
-        this.vaccinated = vaccinated;
         return this;
     }
 }
