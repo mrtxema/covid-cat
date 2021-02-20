@@ -41,6 +41,10 @@ public class CovidDataSeries {
         return vaccinationData;
     }
 
+    public boolean hasTemperatureData() {
+        return temperatures != null;
+    }
+
     public List<FloatDataPoint> getTemperatures() {
         return temperatures;
     }

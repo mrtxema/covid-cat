@@ -1,5 +1,6 @@
 package cat.mrtxema.covid.datasource.aemet;
 
+import cat.mrtxema.covid.Configuration;
 import cat.mrtxema.covid.timeseries.FloatDataPoint;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -33,14 +34,22 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class AemetClient {
-    private static final String ENDPOINT = "https://opendata.aemet.es/opendata/api";
+    private static final String ENDPOINT = Configuration.getInstance().getAemetApiEndpoint();
     private static final String ALL_DAILY_CLIMATOLOGICAL_OPERATION = "/valores/climatologicos/diarios/datos/fechaini/%s/fechafin/%s/todasestaciones";
-    private static final String API_KEY = "***REMOVED***";
     private static final Set<String> CATALAN_PROVINCES = new HashSet<>(Arrays.asList("BARCELONA", "TARRAGONA", "LLEIDA", "GIRONA"));
     static {
         fixSsl();
     }
-    private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private final String apiKey;
+    private final ObjectMapper objectMapper;
+
+    public AemetClient(String apiKey) {
+        if (apiKey == null) {
+            throw new IllegalArgumentException("Missing API key");
+        }
+        this.apiKey = apiKey;
+        this.objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public List<FloatDataPoint> getAverageCataloniaTemperatureSeries(LocalDate startDate, LocalDate endDate) throws IOException {
         return retrieveDailyClimatologicalObservations(startDate, endDate)
@@ -84,7 +93,7 @@ public class AemetClient {
     }
 
     private OperationResponse callOperation(String operationPath) throws IOException {
-        String url = ENDPOINT + operationPath + "?api_key=" + API_KEY;
+        String url = ENDPOINT + operationPath + "?api_key=" + apiKey;
         OperationResponse response = objectMapper.readValue(new URL(url), OperationResponse.class);
         if (response.getEstado() != 200) {
             throw new IOException(String.format("Error %d: %s", response.getEstado(), response.getDescripcion()));
