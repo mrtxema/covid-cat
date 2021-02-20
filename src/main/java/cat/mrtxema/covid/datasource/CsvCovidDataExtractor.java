@@ -2,8 +2,10 @@ package cat.mrtxema.covid.datasource;
 
 import cat.mrtxema.covid.Configuration;
 import cat.mrtxema.covid.CovidDataSeries;
+import cat.mrtxema.covid.datasource.aemet.AemetClient;
 import cat.mrtxema.covid.io.CsvStreamReader;
 import cat.mrtxema.covid.io.ZipStreamReader;
+import cat.mrtxema.covid.timeseries.FloatDataPoint;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +13,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,7 +27,7 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
 
     @Override
     public CovidDataSeries extractData() throws IOException {
-        return new CovidDataSeries(DATA_SOURCE_NAME, readData(), readVaccineData());
+        return new CovidDataSeries(DATA_SOURCE_NAME, readData(), readVaccineData(), readTemperatureData());
     }
 
     private List<CovidApiDataPoint> readData() throws IOException {
@@ -54,6 +58,16 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new CsvCovidDataExtractionException("Error reading vaccine CSV file", e);
+        }
+    }
+
+    private List<FloatDataPoint> readTemperatureData() {
+        LocalDate endDate = LocalDate.now().atStartOfDay().toLocalDate();
+        LocalDate startDate = endDate.minus(8, ChronoUnit.WEEKS);
+        try {
+            return new AemetClient().getAverageCataloniaTemperatureSeries(startDate, endDate);
+        } catch (IOException e) {
+            throw new CsvCovidDataExtractionException("Error reading temperatures", e);
         }
     }
 

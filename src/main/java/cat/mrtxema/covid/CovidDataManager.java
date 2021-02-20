@@ -1,7 +1,9 @@
 package cat.mrtxema.covid;
 
 import cat.mrtxema.covid.chart.Chart;
+import cat.mrtxema.covid.chart.ChartBuilder;
 import cat.mrtxema.covid.chart.CovidCasesChartBuilder;
+import cat.mrtxema.covid.chart.CovidReproductionAndTemperatureChartBuilder;
 import cat.mrtxema.covid.chart.CovidReproductionChartBuilder;
 import cat.mrtxema.covid.chart.GuiHelper;
 import cat.mrtxema.covid.chart.ImmunityChartBuilder;
@@ -35,7 +37,13 @@ public class CovidDataManager {
     }
 
     public Chart getCovidReproductionChart() {
-        return new CovidReproductionChartBuilder(getCovidData()).build();
+        return getCovidReproductionChart(false);
+    }
+
+    public Chart getCovidReproductionChart(boolean withTemperature) {
+        return withTemperature ?
+                new CovidReproductionAndTemperatureChartBuilder(getCovidData()).build() :
+                new CovidReproductionChartBuilder(getCovidData()).build();
     }
 
     public Chart getImmunityChart() {
