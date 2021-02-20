@@ -67,6 +67,10 @@ public final class Configuration {
                 .collect(Collectors.toList());
     }
 
+    public String getAemetApiEndpoint() {
+        return properties.getProperty("aemet_api_endpoint");
+    }
+
 
     private int getIntProperty(String key) {
         return Integer.parseInt(properties.getProperty(key));

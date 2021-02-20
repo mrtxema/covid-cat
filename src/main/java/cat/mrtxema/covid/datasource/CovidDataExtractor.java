@@ -6,5 +6,5 @@ import java.io.IOException;
 
 public interface CovidDataExtractor {
 
-    CovidDataSeries extractData() throws IOException;
+    CovidDataSeries extractData(String aemetApiKey) throws IOException;
 }

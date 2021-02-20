@@ -26,8 +26,8 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
     private final DateFormat vaccineDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     @Override
-    public CovidDataSeries extractData() throws IOException {
-        return new CovidDataSeries(DATA_SOURCE_NAME, readData(), readVaccineData(), readTemperatureData());
+    public CovidDataSeries extractData(String aemetApiKey) throws IOException {
+        return new CovidDataSeries(DATA_SOURCE_NAME, readData(), readVaccineData(), readTemperatureData(aemetApiKey));
     }
 
     private List<CovidApiDataPoint> readData() throws IOException {
@@ -61,11 +61,14 @@ public class CsvCovidDataExtractor implements CovidDataExtractor {
         }
     }
 
-    private List<FloatDataPoint> readTemperatureData() {
+    private List<FloatDataPoint> readTemperatureData(String aemetApiKey) {
+        if (aemetApiKey == null) {
+            return null;
+        }
         LocalDate endDate = LocalDate.now().atStartOfDay().toLocalDate();
         LocalDate startDate = endDate.minus(8, ChronoUnit.WEEKS);
         try {
-            return new AemetClient().getAverageCataloniaTemperatureSeries(startDate, endDate);
+            return new AemetClient(aemetApiKey).getAverageCataloniaTemperatureSeries(startDate, endDate);
         } catch (IOException e) {
             throw new CsvCovidDataExtractionException("Error reading temperatures", e);
         }

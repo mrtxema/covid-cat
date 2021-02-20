@@ -1,7 +1,6 @@
 package cat.mrtxema.covid;
 
 import cat.mrtxema.covid.chart.Chart;
-import cat.mrtxema.covid.chart.ChartBuilder;
 import cat.mrtxema.covid.chart.CovidCasesChartBuilder;
 import cat.mrtxema.covid.chart.CovidReproductionAndTemperatureChartBuilder;
 import cat.mrtxema.covid.chart.CovidReproductionChartBuilder;
@@ -14,10 +13,16 @@ import javax.swing.JFrame;
 import java.io.IOException;
 
 public class CovidDataManager {
+    private String aemetApiKey;
     private CovidDataSeries covidData;
 
+    public CovidDataManager setAemetApiKey(String aemetApiKey) {
+        this.aemetApiKey = aemetApiKey;
+        return this;
+    }
+
     public CovidDataManager loadData() throws IOException {
-        this.covidData =  new CsvCovidDataExtractor().extractData();
+        this.covidData =  new CsvCovidDataExtractor().extractData(aemetApiKey);
         return this;
     }
 
@@ -41,9 +46,10 @@ public class CovidDataManager {
     }
 
     public Chart getCovidReproductionChart(boolean withTemperature) {
-        return withTemperature ?
-                new CovidReproductionAndTemperatureChartBuilder(getCovidData()).build() :
-                new CovidReproductionChartBuilder(getCovidData()).build();
+        CovidDataSeries covidData = getCovidData();
+        return withTemperature && covidData.hasTemperatureData() ?
+                new CovidReproductionAndTemperatureChartBuilder(covidData).build() :
+                new CovidReproductionChartBuilder(covidData).build();
     }
 
     public Chart getImmunityChart() {
