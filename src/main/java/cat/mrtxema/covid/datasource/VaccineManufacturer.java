@@ -7,6 +7,7 @@ public enum VaccineManufacturer {
     MODERNA("Moderna / Lonza", "moderna"),
     ASTRA_ZENECA("Oxford / AstraZeneca", "astrazeneca");
 
+    private static final String NULL_MANUFACTURER_NAME = "No administrada";
     private final String name;
     private final String key;
 
@@ -24,7 +25,7 @@ public enum VaccineManufacturer {
     }
 
     public static VaccineManufacturer fromName(String name) throws ParseException {
-        if (name.isEmpty()) {
+        if (name.isEmpty() || NULL_MANUFACTURER_NAME.equals(name)) {
             return null;
         }
         for (VaccineManufacturer manufacturer : VaccineManufacturer.values()) {
