@@ -57,7 +57,8 @@ This chart shows the daily estimation of the percentage of the population with
 immunity of the following types:
 * Natural immunity after passing the disease, using data from the SARS-CoV-2 sero-Epidemiology
   study of the Spanish government (https://portalcne.isciii.es/enecovid19/)
-* Immunity by vaccine, according to each vaccine effectiveness and counting from the second dose  
+* Immunity by vaccine, according to each vaccine effectiveness and counting after 3 weeks from
+  the first dose  
 
 
 ## License

@@ -4,6 +4,7 @@ import cat.mrtxema.covid.Configuration;
 import cat.mrtxema.covid.datasource.CovidApiVaccineDataPoint;
 import cat.mrtxema.covid.datasource.VaccineManufacturer;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
+import cat.mrtxema.covid.timeseries.TimeSeriesHelper;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -63,7 +64,7 @@ public class ImmunityEstimator {
 
     public IntegerDataPoint estimateImmunityByVaccine(CovidApiVaccineDataPoint vaccineDataPoint) {
         return new IntegerDataPoint()
-                .setDate(vaccineDataPoint.getDate())
+                .setDate(TimeSeriesHelper.addDays(vaccineDataPoint.getDate(), 21))
                 .setValue((int) (vaccineDataPoint.getVaccinated() * getVaccineImmunityRate(vaccineDataPoint.getManufacturer())));
     }
 

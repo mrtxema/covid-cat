@@ -43,12 +43,9 @@ public class TimeSeriesHelper {
     private static <T extends Number, R> List<R> normalizeSeries(List<? extends DataPoint<T>> timeSeries, int numberOfDays,
                                                                 BiFunction<Date, Double, R> resultItemFactory) {
         List<R> result = new ArrayList<>();
-        Calendar calendar = Calendar.getInstance();
         for (DataPoint<T> dataPoint : timeSeries) {
-            calendar.setTime(dataPoint.getDate());
-            calendar.add(Calendar.DAY_OF_YEAR, -numberOfDays);
             double aggregate = timeSeries.stream()
-                    .filter(dp -> dp.getDate().after(calendar.getTime()))
+                    .filter(dp -> dp.getDate().after(addDays(dataPoint.getDate(), -numberOfDays)))
                     .filter(dp -> !dp.getDate().after(dataPoint.getDate()))
                     .mapToDouble(dp -> dp.getValue().doubleValue())
                     .average()
@@ -56,6 +53,13 @@ public class TimeSeriesHelper {
             result.add(resultItemFactory.apply(dataPoint.getDate(), aggregate));
         }
         return result;
+    }
+
+    public static Date addDays(Date date, int days) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_YEAR, days);
+        return calendar.getTime();
     }
 
     public static Stream<IntegerDataPoint> cumulateData(Stream<IntegerDataPoint> dailyDataStream) {

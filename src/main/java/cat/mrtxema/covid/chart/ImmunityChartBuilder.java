@@ -25,7 +25,7 @@ public class ImmunityChartBuilder {
         StackedSeries stackedData = new StackedSeries();
         stackedData.addData(covidData.getCumulativeNaturalImmuneRateNoVaccinated(totalPopulation));
         List<FloatDataPoint> naturalSeries = percentageSeries(stackedData.getSeries());
-        stackedData.addData(covidData.getCumulativeVaccineImmuneRate(totalPopulation));
+        stackedData.addData(covidData.getCumulativeVaccineImmuneRate(totalPopulation, stackedData.getLastDate()));
         List<FloatDataPoint> vaccineSeries = percentageSeries(stackedData.getSeries());
 
         return new ChartBuilder()

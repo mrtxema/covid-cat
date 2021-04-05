@@ -5,6 +5,7 @@ import cat.mrtxema.covid.io.IOUtil;
 import cat.mrtxema.covid.io.ZipStreamReader;
 import cat.mrtxema.covid.timeseries.IntegerDataPoint;
 import cat.mrtxema.covid.timeseries.FloatDataPoint;
+import cat.mrtxema.covid.timeseries.TimeSeriesHelper;
 import com.github.rcaller.datatypes.DataFrame;
 import com.github.rcaller.exception.ExecutionException;
 import com.github.rcaller.rstuff.RCaller;
@@ -80,14 +81,7 @@ public class EpiEstim {
     }
 
     private List<Date> parseDates(int[] days, Date initialDate) {
-        List<Date> result = new ArrayList<>();
-        Calendar calendar = Calendar.getInstance();
-        for (int day : days) {
-            calendar.setTime(initialDate);
-            calendar.add(Calendar.DAY_OF_YEAR, day - 1);
-            result.add(calendar.getTime());
-        }
-        return result;
+        return Arrays.stream(days).mapToObj(day -> TimeSeriesHelper.addDays(initialDate, day - 1)).collect(Collectors.toList());
     }
 
     public static class EpiEstimExecutionException extends RuntimeException {

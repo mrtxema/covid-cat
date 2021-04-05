@@ -28,4 +28,8 @@ public class StackedSeries {
                 .map(entry -> new FloatDataPoint().setDate(entry.getKey()).setValue(entry.getValue().floatValue()))
                 .collect(Collectors.toList());
     }
+
+    public Date getLastDate() {
+        return stack.lastKey();
+    }
 }

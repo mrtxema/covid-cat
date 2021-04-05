@@ -81,14 +81,15 @@ public class CovidDataSeries {
                 .collect(Collectors.toList());
     }
 
-    public List<FloatDataPoint> getCumulativeVaccineImmuneRate(int totalPopulation) {
-        return TimeSeriesHelper.cumulateData(getVaccineImmunes()).map(dp -> toPopulationRate(dp, totalPopulation))
+    public List<FloatDataPoint> getCumulativeVaccineImmuneRate(int totalPopulation, Date maxDate) {
+        return TimeSeriesHelper.cumulateData(getVaccineImmunes(maxDate)).map(dp -> toPopulationRate(dp, totalPopulation))
                 .collect(Collectors.toList());
     }
 
     public List<FloatDataPoint> getCumulativeNaturalImmuneRateNoVaccinated(int totalPopulation) {
         List<FloatDataPoint> naturalRates = getCumulativeNaturalImmuneRate(totalPopulation);
-        Map<Date, Float> vaccinatedRatesByDay = getCumulativeVaccineImmuneRate(totalPopulation).stream()
+        Date lastDate = naturalRates.get(naturalRates.size() - 1).getDate();
+        Map<Date, Float> vaccinatedRatesByDay = getCumulativeVaccineImmuneRate(totalPopulation, lastDate).stream()
                 .collect(Collectors.toMap(dp -> dp.getDate(), dp -> dp.getValue()));
         return naturalRates.stream()
                 .map(dp -> new FloatDataPoint()
@@ -98,7 +99,7 @@ public class CovidDataSeries {
     }
 
     public float  getLastCumulativeVaccineImmuneRate(int totalPopulation) {
-        float totalImmunes = getVaccineImmunes().mapToInt(dp -> dp.getValue()).sum();
+        float totalImmunes = getVaccineImmunes(new Date()).mapToInt(dp -> dp.getValue()).sum();
         return totalImmunes / totalPopulation;
     }
 
@@ -117,10 +118,11 @@ public class CovidDataSeries {
                 apiDataPoint -> !"SI".equalsIgnoreCase(apiDataPoint.getNursingHome()));
     }
 
-    private Stream<IntegerDataPoint> getVaccineImmunes() {
+    private Stream<IntegerDataPoint> getVaccineImmunes(Date maxDate) {
         return vaccinationData.stream()
-                .filter(dp -> dp.getDose() == 2)
+                .filter(dp -> dp.getDose() == 1)
                 .map(dp -> immunityEstimator.estimateImmunityByVaccine(dp))
+                .filter(dp -> !dp.getDate().after(maxDate))
                 .collect(Collectors.groupingBy(
                         IntegerDataPoint::getDate,
                         TreeMap::new,
