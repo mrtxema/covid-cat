@@ -66,11 +66,24 @@ public class TimeSeriesHelper {
         List<IntegerDataPoint> dailyData = dailyDataStream.collect(Collectors.toList());
         List<IntegerDataPoint> cumulativeData = new ArrayList<>();
         int cumulativeValue = 0;
+        Date nextDate = dailyData.get(0).getDate();
         for (IntegerDataPoint daily : dailyData) {
+            cumulativeData.addAll(fillBlanks(nextDate, daily.getDate(), cumulativeValue));
+            nextDate = addDays(daily.getDate(), 1);
             cumulativeValue += daily.getValue();
             cumulativeData.add(new IntegerDataPoint().setDate(daily.getDate()).setValue(cumulativeValue));
         }
         return cumulativeData.stream();
+    }
+
+    private static List<IntegerDataPoint> fillBlanks(Date startDate, Date endDate, int value) {
+        Date date = startDate;
+        List<IntegerDataPoint> result = new ArrayList<>();
+        while (date.before(endDate)) {
+            result.add(new IntegerDataPoint().setDate(date).setValue(value));
+            date = addDays(date, 1);
+        }
+        return result;
     }
 
     public static Stream<IntegerDataPoint> aggregateVaccineData(List<CovidApiVaccineDataPoint> vaccinationData,
