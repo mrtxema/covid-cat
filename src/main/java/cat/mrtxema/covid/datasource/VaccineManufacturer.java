@@ -5,7 +5,8 @@ import java.text.ParseException;
 public enum VaccineManufacturer {
     PFIZER("BioNTech / Pfizer", "pfizer"),
     MODERNA("Moderna / Lonza", "moderna"),
-    ASTRA_ZENECA("Oxford / AstraZeneca", "astrazeneca");
+    ASTRA_ZENECA("Oxford / AstraZeneca", "astrazeneca"),
+    JANSSEN("J&J / Janssen", "janssen");
 
     private static final String NULL_MANUFACTURER_NAME = "No administrada";
     private final String name;
